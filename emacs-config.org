@@ -1,0 +1,117 @@
+#+TITLE: Emacs config for Einar
+#+DESCRIPTION: Org-babel based emacs config
+#+LANGUAGE: en
+#+PROPERTY: results silent
+
+* Init
+
+** Move custom variables to own file
+   #+begin_src emacs-lisp
+     (setq custom-file "~/.emacs.d/custom.el")
+     (load-file custom-file)
+   #+end_src
+
+** Move backup files to own directory
+   #+begin_src emacs-lisp
+     (setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
+   #+end_src
+
+* Styling
+
+** Remove startup welcome screen
+
+#+BEGIN_SRC emacs-lisp
+(custom-set-variables
+'(inhibit-startup-screen t))
+#+END_SRC
+
+** Set theme
+
+#+BEGIN_SRC emacs-lisp
+(load-theme 'zenburn t)
+#+END_SRC
+
+* Org-mode
+** Get org-templates
+#+begin_src elisp-mode
+(require 'org-tempo)
+#+end_src
+** Org-present
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'load-path "~/.emacs.d/org-present")
+(autoload 'org-present "org-present" nil t)
+
+(eval-after-load "org-present"
+  '(progn
+     (add-hook 'org-present-mode-hook
+               (lambda ()
+                 (org-present-big)
+                 (org-display-inline-images)
+                 (org-present-hide-cursor)
+                 (org-present-read-only)))
+     (add-hook 'org-present-mode-quit-hook
+               (lambda ()
+                 (org-present-small)
+                 (org-remove-inline-images)
+                 (org-present-show-cursor)
+                 (org-present-read-write)))))
+#+END_SRC
+
+** Org-babel
+#+BEGIN_SRC emacs-lisp
+(require 'ob-C)
+(setq org-babel-load-languages
+ '((python . t)
+   (R . t)
+   (sh . t)
+   (emacs-lisp . t)
+   (C . t)))
+#+END_SRC
+
+** Org-calendar
+   #+begin_src emacs-lisp
+     (setq org-agenda-include-diary t)
+   #+end_src
+
+* Python
+
+** Set python interpreter to python3
+#+BEGIN_SRC emacs-lisp
+(setq python-shell-interpreter "/usr/bin/python3")
+#+END_SRC
+
+* Packages
+
+** Helm
+#+BEGIN_SRC emacs-lisp
+  (use-package helm
+    :ensure t
+    :bind (("M-x" . helm-M-x)
+	   ("C-x b" . helm-buffers-list))
+    :config
+    (progn
+      ((require 'helm-config)
+       (helm-mode 1))))
+#+END_SRC
+
+** Paredit
+   #+begin_src emacs-lisp
+     (use-package paredit
+       :ensure t))
+   #+end_src
+
+* Work
+** Elveg 2.0
+*** FME script
+    #+begin_src emacs-lisp
+      (defconst *fme-exe* "/mnt/c/Program Files/FME/fme.exe")
+
+      (defconst *nvdb2gml* "C:/DATA/GIT/SOSI_Vegnett/FME/NVDBAPI2GML_V3_Vegnett_2019.fmw")
+
+      (defun fme/nvdb2gml (kommunenr)
+      (interactive "sKommunenr: ")
+	(start-process (concat "nvdb2elveg" kommunenr)
+		       kommunenr
+		       ,*fme-exe* *nvdb2gml*
+		       "--omrNvn" kommunenr))
+    #+end_src
