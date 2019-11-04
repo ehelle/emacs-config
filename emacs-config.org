@@ -4,7 +4,11 @@
 #+PROPERTY: results silent
 
 * Init
-
+** Ensure env variables from shell to emacs
+#+BEGIN_SRC emacs-lisp
+  (use-package exec-path-from-shell
+    :ensure t)
+#+END_SRC
 ** Move custom variables to own file
    #+begin_src emacs-lisp
      (setq custom-file "~/.emacs.d/custom.el")
@@ -12,8 +16,16 @@
    #+end_src
 
 ** Move backup files to own directory
+
    #+begin_src emacs-lisp
      (setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
+   #+end_src
+** Security
+   #+begin_src emacs-lisp
+     (setq gnutls-verify-error t)
+     (setq gnutls-min-prime-bits 2048)
+     (setq network-security-level 'high)
+     (setq nsm-save-host-names t)
    #+end_src
 
 * Styling
@@ -28,11 +40,14 @@
 ** Set theme
 
 #+BEGIN_SRC emacs-lisp
-(load-theme 'zenburn t)
+    (use-package zenburn-theme
+      :ensure t
+      :config
+      (load-theme 'zenburn t))
 #+END_SRC
 
 * Org-mode
-** Get org-templates
+** Get org-templates (<s++)
 #+begin_src elisp-mode
 (require 'org-tempo)
 #+end_src
@@ -59,13 +74,15 @@
 
 ** Org-babel
 #+BEGIN_SRC emacs-lisp
-(require 'ob-C)
-(setq org-babel-load-languages
- '((python . t)
-   (R . t)
-   (sh . t)
-   (emacs-lisp . t)
-   (C . t)))
+  (require 'ob-C)
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((python . t)
+     (R . t)
+     (shell . t)
+     (emacs-lisp . t)
+     (gnuplot . t)
+     (C . t)))
 #+END_SRC
 
 ** Org-calendar
@@ -81,7 +98,6 @@
 #+END_SRC
 
 * Packages
-
 ** Helm
 #+BEGIN_SRC emacs-lisp
   (use-package helm
@@ -89,29 +105,61 @@
     :bind (("M-x" . helm-M-x)
 	   ("C-x b" . helm-buffers-list))
     :config
-    (progn
-      ((require 'helm-config)
-       (helm-mode 1))))
+    (helm-mode 1))
 #+END_SRC
 
 ** Paredit
    #+begin_src emacs-lisp
      (use-package paredit
-       :ensure t))
+       :ensure t)
    #+end_src
 
+** Restclient
+   #+begin_src emacs-lisp
+     (use-package restclient)
+   #+end_src
+
+** Magit
+#+BEGIN_SRC emacs-lisp
+  (use-package magit
+    :config
+    (setq magit-save-repository-buffers nil))
+#+END_SRC
+
+** Company
+#+BEGIN_SRC emacs-lisp
+  (use-package company
+    :ensure t
+    :config
+    (add-hook 'after-init-hook 'global-company-mode))
+#+END_SRC
+
+** Pdf-tools
+#+BEGIN_SRC emacs-lisp
+  (use-package pdf-tools
+    :ensure t)
+#+END_SRC
 * Work
 ** Elveg 2.0
 *** FME script
     #+begin_src emacs-lisp
       (defconst *fme-exe* "/mnt/c/Program Files/FME/fme.exe")
 
-      (defconst *nvdb2gml* "C:/DATA/GIT/SOSI_Vegnett/FME/NVDBAPI2GML_V3_Vegnett_2019.fmw")
+      (defconst *nvdb2gml* "C:/DATA/GIT/SOSI-Vegnett/FME/nvdbapi2gml_V3.fmw")
+
+      (defconst *nvdb2elveg* "C:/DATA/GIT/SOSI-Vegnett/FME/makeMultipleKnr.fmw")
 
       (defun fme/nvdb2gml (kommunenr)
       (interactive "sKommunenr: ")
 	(start-process (concat "nvdb2elveg" kommunenr)
 		       kommunenr
 		       ,*fme-exe* *nvdb2gml*
-		       "--omrNvn" kommunenr))
+		       "--kommune" kommunenr))
+
+      (defun fme/nvdb2elveg (kommunenr)
+      (interactive "sKommunenr (kommasep): ")
+	(start-process (concat "nvdb2elveg" kommunenr)
+		       kommunenr
+		       ,*fme-exe* *nvdb2elveg*
+		       "--kommune" kommunenr))
     #+end_src
